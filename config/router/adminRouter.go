@@ -96,6 +96,7 @@ func adminRouterInit(r *gin.RouterGroup) {
 			suppliesBorrow.POST("batch-supplies-return", suppliesController.BatchReturnRecordByAdmin)
 			suppliesBorrow.POST("supplies-cancel", suppliesController.CancelReturnRecordByAdmin)
 			suppliesBorrow.PUT("supplies-update", suppliesController.UpdateRecordByAdmin)
+			suppliesBorrow.DELETE("delete-reject", suppliesController.DeleteRejectRecordByAdmin)
 
 		}
 	}

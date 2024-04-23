@@ -14,7 +14,7 @@ func GetBorrowRecord(campus uint8, status int, studentID string) ([]models.Borro
 	var borrowRecord []models.BorrowRecord
 	var result *gorm.DB
 	if status == 1 {
-		result = database.DB.Where(models.BorrowRecord{
+		result = database.DB.Unscoped().Where(models.BorrowRecord{
 			Campus:    campus,
 			Status:    1,
 			StudentID: studentID,
@@ -24,7 +24,7 @@ func GetBorrowRecord(campus uint8, status int, studentID string) ([]models.Borro
 			StudentID: studentID,
 		}).Order("apply_time desc").Find(&borrowRecord)
 	} else {
-		result = database.DB.Where(models.BorrowRecord{
+		result = database.DB.Unscoped().Where(models.BorrowRecord{
 			Campus:    campus,
 			Status:    status,
 			StudentID: studentID,
@@ -82,7 +82,12 @@ func GetBorrowRecordsByBorrowIDs(borrowIDs []int) ([]models.BorrowRecord, error)
 }
 
 func DeleteRecord(RecordID int) error {
-	result := database.DB.Delete(models.BorrowRecord{ID: RecordID})
+	result := database.DB.Delete(&models.BorrowRecord{ID: RecordID})
+	return result.Error
+}
+
+func CompletedDeleteRecord(RecordID int) error {
+	result := database.DB.Unscoped().Delete(&models.BorrowRecord{ID: RecordID})
 	return result.Error
 }
 

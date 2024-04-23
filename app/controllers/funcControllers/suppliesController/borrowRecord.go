@@ -193,7 +193,7 @@ func CancelBorrow(c *gin.Context) {
 		return
 	}
 	// 取消借用
-	err = suppliesServices.DeleteRecord(data.BorrowID)
+	err = suppliesServices.CompletedDeleteRecord(data.BorrowID)
 	if err != nil {
 		_ = c.AbortWithError(200, apiException.ServerError)
 		return
@@ -483,6 +483,49 @@ func CancelRejectRecordByAdmin(c *gin.Context) {
 	}
 	// 取消驳回
 	err = suppliesServices.CancelRejectBorrow(data.ID)
+	if err != nil {
+		_ = c.AbortWithError(200, apiException.ServerError)
+		return
+	}
+	utils.JsonSuccessResponse(c, nil)
+}
+
+//管理员删除被驳回记录
+type DeleteRejectRecordData struct {
+	ID int `form:"id" binding:"required"`
+}
+
+func DeleteRejectRecordByAdmin(c *gin.Context) {
+	// 获取参数
+	var data DeleteRejectRecordData
+	err := c.ShouldBindQuery(&data)
+	if err != nil {
+		_ = c.AbortWithError(200, apiException.ParamError)
+		return
+	}
+	// 判断鉴权
+	user, err := sessionServices.GetUserSession(c)
+	if err != nil {
+		_ = c.AbortWithError(200, apiException.NotLogin)
+		return
+	}
+	if user.Type != models.Admin && user.Type != models.StudentAffairsCenter {
+		_ = c.AbortWithError(200, apiException.ServerError)
+		return
+	}
+	// 判断记录是否存在
+	record, err := suppliesServices.GetBorrowRecordByBorrowID(data.ID)
+	if err != nil {
+		_ = c.AbortWithError(200, apiException.ServerError)
+		return
+	}
+	// 判断是否已经驳回
+	if record.Status != 2 {
+		_ = c.AbortWithError(200, apiException.ServerError)
+		return
+	}
+	// 删除记录
+	err = suppliesServices.DeleteRecord(data.ID)
 	if err != nil {
 		_ = c.AbortWithError(200, apiException.ServerError)
 		return
